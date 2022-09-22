@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  mariadb-galera-3:
+    image: bitnami/mariadb-galera:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb-galera/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./galera/node3/data:/bitnami/mariadb
+    environment:
+      TZ: ${TZ}
+      NODE_NAME: "NODE3"
+      MARIADB_GALERA_NODE_ADDRESS: ${GALERA_CLUSTER_NODE3}
+      MARIADB_GALERA_CLUSTER_NAME: ${MARIADB_GALERA_CLUSTER_NAME}
+      MARIADB_GALERA_CLUSTER_ADDRESS: ${MARIADB_GALERA_CLUSTER_ADDRESS}
+      MARIADB_GALERA_MARIABACKUP_USER: ${MARIADB_GALERA_MARIABACKUP_USER}
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: ${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+      MARIADB_REPLICATION_USER: ${MARIADB_REPLICATION_USER}
+      MARIADB_REPLICATION_PASSWORD: ${MARIADB_REPLICATION_PASSWORD}
+
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    network_mode: host
+    # ports:
+    #   - "3306:3306"

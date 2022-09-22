@@ -1,0 +1,122 @@
+version: "3"
+
+services:
+  mariadb-galera-0:
+    image: bitnami/mariadb-galera:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb-galera/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - ./galera/node0/data:/bitnami/mariadb
+    environment:
+      TZ: "Asia/Bangkok"
+      NODE_NAME: "NODE0"
+      MARIADB_GALERA_CLUSTER_BOOTSTRAP: "yes"
+      MARIADB_GALERA_FORCE_SAFETOBOOTSTRAP: "yes"
+      MARIADB_GALERA_CLUSTER_NAME: ${MARIADB_GALERA_CLUSTER_NAME}
+      MARIADB_GALERA_MARIABACKUP_USER: ${MARIADB_GALERA_MARIABACKUP_USER}
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: ${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    ports:
+      - "3306:3306"
+      - "4444:4444"
+      - "4567:4567"
+      - "4568:4568"
+
+  mariadb-galera-1:
+    image: bitnami/mariadb-galera:latest
+    restart: always
+    depends_on:
+      mariadb-galera-0:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb-galera/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./galera/node1/data:/bitnami/mariadb
+    environment:
+      TZ: "Asia/Bangkok"
+      NODE_NAME: "NODE1"
+      MARIADB_GALERA_CLUSTER_NAME: ${MARIADB_GALERA_CLUSTER_NAME}
+      MARIADB_GALERA_CLUSTER_ADDRESS: ${MARIADB_GALERA_CLUSTER_ADDRESS}
+      MARIADB_GALERA_MARIABACKUP_USER: ${MARIADB_GALERA_MARIABACKUP_USER}
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: ${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+
+  mariadb-galera-2:
+    image: bitnami/mariadb-galera:latest
+    restart: always
+    depends_on:
+      mariadb-galera-0:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb-galera/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+    volumes:
+      - ./galera/node2/data:/bitnami/mariadb
+    environment:
+      TZ: "Asia/Bangkok"
+      NODE_NAME: "NODE2"
+      MARIADB_GALERA_CLUSTER_NAME: ${MARIADB_GALERA_CLUSTER_NAME}
+      MARIADB_GALERA_CLUSTER_ADDRESS: ${MARIADB_GALERA_CLUSTER_ADDRESS}
+      MARIADB_GALERA_MARIABACKUP_USER: ${MARIADB_GALERA_MARIABACKUP_USER}
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: ${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    ports:
+      - "3308:3306"
+
+  mariadb-galera-3:
+    image: bitnami/mariadb-galera:latest
+    restart: always
+    depends_on:
+      mariadb-galera-0:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/mariadb-galera/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+    volumes:
+      - ./galera/node3/data:/bitnami/mariadb
+    environment:
+      TZ: "Asia/Bangkok"
+      NODE_NAME: "NODE3"
+      MARIADB_GALERA_CLUSTER_NAME: ${MARIADB_GALERA_CLUSTER_NAME}
+      MARIADB_GALERA_CLUSTER_ADDRESS: ${MARIADB_GALERA_CLUSTER_ADDRESS}
+      MARIADB_GALERA_MARIABACKUP_USER: ${MARIADB_GALERA_MARIABACKUP_USER}
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: ${MARIADB_GALERA_MARIABACKUP_PASSWORD}
+
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    ports:
+      - "3309:3306"
+
+  nginx-proxy:
+    image: nginx:1.23-alpine
+    restart: always
+    depends_on:
+      mariadb-galera-1:
+        condition: service_healthy
+      mariadb-galera-2:
+        condition: service_healthy
+      mariadb-galera-3:
+        condition: service_healthy
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    # network_mode: host
+    ports:
+      - 13306:3306
+    environment:
+      TZ: Asia/Bangkok

@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  nginx-proxy:
+    image: nginx:1.23-alpine
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    network_mode: host
+    # ports:
+    #   - 13306:3306
+    environment:
+      TZ: ${TZ}
+      GALERA_CLUSTER_NODE1: ${GALERA_CLUSTER_NODE1}
+      GALERA_CLUSTER_NODE2: ${GALERA_CLUSTER_NODE2}
+      GALERA_CLUSTER_NODE3: ${GALERA_CLUSTER_NODE3}
